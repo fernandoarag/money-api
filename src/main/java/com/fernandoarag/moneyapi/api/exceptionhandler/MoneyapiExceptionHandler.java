@@ -22,6 +22,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import com.fernandoarag.moneyapi.api.service.exception.NonexistentOrInactiveCategoryException;
+import com.fernandoarag.moneyapi.api.service.exception.NonexistentOrInactivePersonException;
+
 @ControllerAdvice
 public class MoneyapiExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -32,79 +35,105 @@ public class MoneyapiExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
             HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-        String mensagemUsuario = messageSource.getMessage("mensagem.invalida", null, LocaleContextHolder.getLocale());
-        String mensagemDesenvolvedor = ex.getCause() != null ? ex.getCause().toString() : ex.toString();
-        List<Erro> erros = Arrays.asList(new Erro(mensagemUsuario, mensagemDesenvolvedor));
-        return handleExceptionInternal(ex, erros, headers, HttpStatus.BAD_REQUEST, request);
+        String userMessage = messageSource.getMessage("system.invalid", null, LocaleContextHolder.getLocale());
+        String developerMessage = ex.getCause() != null ? ex.getCause().toString() : ex.toString();
+        List<ReponseError> errors = Arrays.asList(new ReponseError(userMessage, developerMessage));
+
+        return handleExceptionInternal(ex, errors, headers, HttpStatus.BAD_REQUEST, request);
     }
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
             HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-        List<Erro> erros = criarListaDeErros(ex.getBindingResult());
-        return handleExceptionInternal(ex, erros, headers, HttpStatus.BAD_REQUEST, request);
+        List<ReponseError> errors = createListOfErrors(ex.getBindingResult());
+        return handleExceptionInternal(ex, errors, headers, HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler({ EmptyResultDataAccessException.class })
     public ResponseEntity<Object> handleEmptyResultDataAccessException(EmptyResultDataAccessException ex,
             WebRequest request) {
 
-        String mensagemUsuario = messageSource.getMessage("recurso.nao-encontrado", null,
+        String userMessage = messageSource.getMessage("system.not-found", null,
                 LocaleContextHolder.getLocale());
-        String mensagemDesenvolvedor = ex.toString();
-        List<Erro> erros = Arrays.asList(new Erro(mensagemUsuario, mensagemDesenvolvedor));
+        String developerMessage = ex.toString();
+        List<ReponseError> errors = Arrays.asList(new ReponseError(userMessage, developerMessage));
 
-        return handleExceptionInternal(ex, erros, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+        return handleExceptionInternal(ex, errors, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
     @ExceptionHandler({ DataIntegrityViolationException.class })
     public ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException ex,
             WebRequest request) {
 
-        String mensagemUsuario = messageSource.getMessage("recurso.operacao-nao-permitida", null,
+        String userMessage = messageSource.getMessage("system.access-denied", null,
                 LocaleContextHolder.getLocale());
-        String mensagemDesenvolvedor = ExceptionUtils.getRootCauseMessage(ex);
-        List<Erro> erros = Arrays.asList(new Erro(mensagemUsuario, mensagemDesenvolvedor));
+        String developerMessage = ExceptionUtils.getRootCauseMessage(ex);
+        List<ReponseError> errors = Arrays.asList(new ReponseError(userMessage, developerMessage));
 
-        return handleExceptionInternal(ex, erros, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+        return handleExceptionInternal(ex, errors, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
-    private List<Erro> criarListaDeErros(BindingResult bindingResult) {
-        List<Erro> erros = new ArrayList<>();
+    @ExceptionHandler({ NonexistentOrInactivePersonException.class })
+    public ResponseEntity<Object> handleNonexistentOrInactivePersonException(NonexistentOrInactivePersonException ex,
+            WebRequest request) {
+        String userMessage = messageSource.getMessage("peopleModel.not-found", null,
+                LocaleContextHolder.getLocale());
+        String developerMessage = ex.toString();
+
+        List<ReponseError> errors = Arrays.asList(new ReponseError(userMessage, developerMessage));
+
+        return handleExceptionInternal(ex, errors, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler({ NonexistentOrInactiveCategoryException.class })
+    public ResponseEntity<Object> handleNonexistentOrInactiveCategoryException(
+            NonexistentOrInactiveCategoryException ex, WebRequest request) {
+        String userMessage = messageSource.getMessage("categoriesModel.not-found", null,
+                LocaleContextHolder.getLocale());
+        String developerMessage = ex.toString();
+
+        List<ReponseError> errors = Arrays.asList(new ReponseError(userMessage, developerMessage));
+
+        return handleExceptionInternal(ex, errors, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    private List<ReponseError> createListOfErrors(BindingResult bindingResult) {
+        List<ReponseError> errors = new ArrayList<>();
 
         for (FieldError fieldError : bindingResult.getFieldErrors()) {
-            String mensagemUsuario = messageSource.getMessage(fieldError, LocaleContextHolder.getLocale());
-            String mensagemDesenvolvedor = fieldError.toString();
-            erros.add(new Erro(mensagemUsuario, mensagemDesenvolvedor));
+            String userMessage = messageSource.getMessage(fieldError, LocaleContextHolder.getLocale());
+            String developerMessage = fieldError.toString();
+            errors.add(new ReponseError(userMessage, developerMessage));
         }
 
-        return erros;
+        return errors;
     }
 
-    public static class Erro {
-        private String mensagemUsuario;
-        private String mensagemDesenvolvedor;
+    public static class ReponseError {
+        private String userMessage;
+        private String developerMessage;
 
-        public Erro(String mensagemUsuario, String mensagemDesenvolvedor) {
-            this.mensagemUsuario = mensagemUsuario;
-            this.mensagemDesenvolvedor = mensagemDesenvolvedor;
+        public ReponseError(String userMessage, String developerMessage) {
+            this.userMessage = userMessage;
+            this.developerMessage = developerMessage;
         }
 
-        public String getMensagemUsuario() {
-            return mensagemUsuario;
+        public String getUserMessage() {
+            return userMessage;
         }
 
-        public void setMensagemUsuario(String mensagemUsuario) {
-            this.mensagemUsuario = mensagemUsuario;
+        public void setUserMessage(String userMessage) {
+            this.userMessage = userMessage;
         }
 
-        public String getMensagemDesenvolvedor() {
-            return mensagemDesenvolvedor;
+        public String getDeveloperMessage() {
+            return developerMessage;
         }
 
-        public void setMensagemDesenvolvedor(String mensagemDesenvolvedor) {
-            this.mensagemDesenvolvedor = mensagemDesenvolvedor;
+        public void setDeveloperMessage(String developerMessage) {
+            this.developerMessage = developerMessage;
         }
+
     }
 }

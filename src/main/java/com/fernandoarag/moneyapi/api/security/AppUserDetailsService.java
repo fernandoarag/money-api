@@ -14,27 +14,27 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.fernandoarag.moneyapi.api.model.Usuario;
-import com.fernandoarag.moneyapi.api.repository.UsuarioRepository;
+import com.fernandoarag.moneyapi.api.models.UsersModel;
+import com.fernandoarag.moneyapi.api.repository.UsersRepository;
 
 @Service
 public class AppUserDetailsService implements UserDetailsService {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UsersRepository usersRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
-        Usuario usuario = usuarioOptional
+        Optional<UsersModel> userOptional = usersRepository.findByEmail(email);
+        UsersModel user = userOptional
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário e/ou senha incorretos!"));
-        return new User(email, usuario.getSenha(), getPermissoes(usuario));
+        return new User(email, user.getPassword(), getPermissions(user));
     }
 
-    private Collection<? extends GrantedAuthority> getPermissoes(Usuario usuario) {
+    private Collection<? extends GrantedAuthority> getPermissions(UsersModel usersModel) {
         Set<SimpleGrantedAuthority> authorities = new HashSet<>();
-        usuario.getPermissoes()
-                .forEach(p -> authorities.add(new SimpleGrantedAuthority(p.getDescricao().toUpperCase())));
+        usersModel.getPermissions()
+                .forEach(p -> authorities.add(new SimpleGrantedAuthority(p.getDescription().toUpperCase())));
         return authorities;
     }
 
