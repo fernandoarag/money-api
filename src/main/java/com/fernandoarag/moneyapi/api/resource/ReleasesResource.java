@@ -1,22 +1,16 @@
 package com.fernandoarag.moneyapi.api.resource;
 
-import java.util.Arrays;
-import java.util.List;
-
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,12 +20,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fernandoarag.moneyapi.api.event.ResourceCreatedEvent;
-import com.fernandoarag.moneyapi.api.exceptionhandler.MoneyapiExceptionHandler.ReponseError;
 import com.fernandoarag.moneyapi.api.models.ReleasesModel;
 import com.fernandoarag.moneyapi.api.repository.ReleasesRepository;
 import com.fernandoarag.moneyapi.api.repository.filter.ReleasesFilter;
 import com.fernandoarag.moneyapi.api.service.ReleasesService;
-import com.fernandoarag.moneyapi.api.service.exception.NonexistentOrInactivePersonException;
 
 @RestController
 @RequestMapping("/")
@@ -53,9 +45,6 @@ public class ReleasesResource {
 
     @Autowired
     private ApplicationEventPublisher publisher;
-
-    @Autowired
-    private MessageSource messageSource;
 
     @GetMapping(RELEASES_URI)
     @PreAuthorize("hasAuthority('ROLE_SEARCH_RELEASE') and #oauth2.hasScope('read')")
