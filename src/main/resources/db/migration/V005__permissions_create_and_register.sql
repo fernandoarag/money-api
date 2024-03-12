@@ -19,7 +19,7 @@ INSERT INTO permissions (description)
 	values ('ROLE_SEARCH_CATEGORY');
 
 
--- INSERT PERMISSIONS RULE FOR USERS
+-- INSERT PERMISSIONS RULE FOR PEOPLES
 INSERT INTO permissions (description) 
 	values ('ROLE_CREATE_PERSON');
 
@@ -45,3 +45,17 @@ INSERT INTO permissions (description)
 
 INSERT INTO permissions (description) 
 	values ( 'ROLE_SEARCH_RELEASE');
+
+
+-- INSERT PERMISSIONS RULE FOR USERS
+INSERT INTO permissions (description) 
+	values ('ROLE_CREATE_USER');
+
+INSERT INTO permissions (description) 
+	values ('ROLE_UPDATE_USER');
+
+INSERT INTO permissions (description) 
+	values ('ROLE_DELETE_USER');
+
+INSERT INTO permissions (description) 
+	values ('ROLE_SEARCH_USER');

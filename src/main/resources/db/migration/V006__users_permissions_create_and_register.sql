@@ -46,6 +46,19 @@ INSERT INTO user_permissions (user_id, permission_id)
 INSERT INTO user_permissions (user_id, permission_id) 
 	values (1, 12);
 
+INSERT INTO user_permissions (user_id, permission_id) 
+	values (1, 13);
+
+INSERT INTO user_permissions (user_id, permission_id) 
+	values (1, 14);
+
+INSERT INTO user_permissions (user_id, permission_id) 
+	values (1, 15);
+
+INSERT INTO user_permissions (user_id, permission_id) 
+	values (1, 16);
+
+
 -- maria
 INSERT INTO user_permissions (user_id, permission_id) 
 	values (2, 4);

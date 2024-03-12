@@ -24,6 +24,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import com.fernandoarag.moneyapi.api.service.exception.NonexistentOrInactiveCategoryException;
 import com.fernandoarag.moneyapi.api.service.exception.NonexistentOrInactivePersonException;
+import com.fernandoarag.moneyapi.api.service.exception.NonexistentOrInactiveUserException;
 
 @ControllerAdvice
 public class MoneyapiExceptionHandler extends ResponseEntityExceptionHandler {
@@ -69,6 +70,18 @@ public class MoneyapiExceptionHandler extends ResponseEntityExceptionHandler {
         String userMessage = messageSource.getMessage("system.access-denied", null,
                 LocaleContextHolder.getLocale());
         String developerMessage = ExceptionUtils.getRootCauseMessage(ex);
+        List<ReponseError> errors = Arrays.asList(new ReponseError(userMessage, developerMessage));
+
+        return handleExceptionInternal(ex, errors, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler({ NonexistentOrInactiveUserException.class })
+    public ResponseEntity<Object> handleNonexistentOrInactiveUserException(NonexistentOrInactiveUserException ex,
+            WebRequest request) {
+        String userMessage = messageSource.getMessage("usersModel.not-found", null,
+                LocaleContextHolder.getLocale());
+        String developerMessage = ex.toString();
+
         List<ReponseError> errors = Arrays.asList(new ReponseError(userMessage, developerMessage));
 
         return handleExceptionInternal(ex, errors, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);

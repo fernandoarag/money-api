@@ -23,6 +23,7 @@ import com.fernandoarag.moneyapi.api.event.ResourceCreatedEvent;
 import com.fernandoarag.moneyapi.api.models.ReleasesModel;
 import com.fernandoarag.moneyapi.api.repository.ReleasesRepository;
 import com.fernandoarag.moneyapi.api.repository.filter.ReleasesFilter;
+import com.fernandoarag.moneyapi.api.repository.projection.ReleasesSummary;
 import com.fernandoarag.moneyapi.api.service.ReleasesService;
 
 @RestController
@@ -51,6 +52,13 @@ public class ReleasesResource {
     public Page<ReleasesModel> searchReleases(ReleasesFilter releasesFilter, Pageable pageable) {
 
         return releasesRepository.filter(releasesFilter, pageable);
+    }
+
+    @GetMapping(path = RELEASES_URI, params = "summary")
+    @PreAuthorize("hasAuthority('ROLE_SEARCH_RELEASE') and #oauth2.hasScope('read')")
+    public Page<ReleasesSummary> searchReleasesSummary(ReleasesFilter releasesFilter, Pageable pageable) {
+
+        return releasesRepository.summary(releasesFilter, pageable);
     }
 
     @GetMapping(RELEASE_URI + "/{id}")

@@ -16,9 +16,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.StringUtils;
 
+import com.fernandoarag.moneyapi.api.models.CategoriesModel_;
+import com.fernandoarag.moneyapi.api.models.PeopleModel_;
 import com.fernandoarag.moneyapi.api.models.ReleasesModel;
 import com.fernandoarag.moneyapi.api.models.ReleasesModel_;
 import com.fernandoarag.moneyapi.api.repository.filter.ReleasesFilter;
+import com.fernandoarag.moneyapi.api.repository.projection.ReleasesSummary;
 
 public class ReleasesRepositoryImpl implements ReleasesRepositoryQuery {
 
@@ -36,6 +39,33 @@ public class ReleasesRepositoryImpl implements ReleasesRepositoryQuery {
         criteria.where(predicates);
 
         TypedQuery<ReleasesModel> query = manager.createQuery(criteria);
+
+        addPaginationRestrictions(query, pageable);
+
+        return new PageImpl<>(query.getResultList(), pageable, total(releasesFilter));
+    }
+
+    @Override
+    public Page<ReleasesSummary> summary(ReleasesFilter releasesFilter, Pageable pageable) {
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaQuery<ReleasesSummary> criteria = builder.createQuery(ReleasesSummary.class);
+        Root<ReleasesModel> root = criteria.from(ReleasesModel.class);
+
+        criteria.select(builder.construct(ReleasesSummary.class,
+                root.get(ReleasesModel_.id),
+                root.get(ReleasesModel_.description),
+                root.get(ReleasesModel_.dueDate),
+                root.get(ReleasesModel_.dateOfPayment),
+                root.get(ReleasesModel_.price),
+                root.get(ReleasesModel_.type),
+                root.get(ReleasesModel_.category).get(CategoriesModel_.name),
+                root.get(ReleasesModel_.person).get(PeopleModel_.name)));
+
+        // Criar as restrições
+        Predicate[] predicates = createRestrictions(releasesFilter, builder, root);
+        criteria.where(predicates);
+
+        TypedQuery<ReleasesSummary> query = manager.createQuery(criteria);
 
         addPaginationRestrictions(query, pageable);
 
@@ -67,7 +97,7 @@ public class ReleasesRepositoryImpl implements ReleasesRepositoryQuery {
         return predicates.toArray(new Predicate[predicates.size()]);
     }
 
-    private void addPaginationRestrictions(TypedQuery<ReleasesModel> query, Pageable pageable) {
+    private void addPaginationRestrictions(TypedQuery<?> query, Pageable pageable) {
         int currentPage = pageable.getPageNumber() > 0 ? pageable.getPageNumber() : 0;
         int totalRecordsPerPage = pageable.getPageSize();
         int firstPageRecord = currentPage * totalRecordsPerPage;

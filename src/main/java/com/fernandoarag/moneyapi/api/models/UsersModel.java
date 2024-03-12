@@ -2,6 +2,7 @@ package com.fernandoarag.moneyapi.api.models;
 
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -11,6 +12,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "users")
@@ -21,12 +25,23 @@ public class UsersModel {
     private Long id;
 
     private String name;
+
+    @NotNull
+    @Column(unique = true)
     private String email;
+
+    @JsonIgnore
+    @NotNull
+    @Column(unique = true)
     private String password;
 
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_permissions", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
     private List<PermissionsModel> permissions;
+
+    @NotNull
+    private boolean active;
 
     public Long getId() {
         return id;
@@ -68,6 +83,19 @@ public class UsersModel {
         this.permissions = permissions;
     }
 
+    public boolean isActive() {
+        return active;
+    }
+
+    @JsonIgnore
+    public boolean isInactive() {
+        return !active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -92,5 +120,4 @@ public class UsersModel {
             return false;
         return true;
     }
-
 }
